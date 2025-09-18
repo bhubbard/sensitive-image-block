@@ -1,0 +1,1370 @@
+<?xml version="1.0"?><artefact xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="artefact.xsd" name="Sensitive Image" slug="sensitive-image" type="code-package" schemaVersion="2">
+  <file path="readme.txt">
+    <description>This file contains the readme information for the block. It is used to provide information about the block, its usage, and any other relevant details.</description>
+    <content><![CDATA[
+=== Sensitive Image ===
+
+Contributors:      WordPress Telex
+Tags:              block, image, content warning, sensitive content, media
+Tested up to:      6.8
+Stable tag:        0.1.0
+License:           GPLv2 or later
+License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+
+A WordPress block for displaying potentially sensitive images behind a customizable content warning overlay.
+
+== Description ==
+
+The Sensitive Image block provides a professional way to handle potentially sensitive visual content by displaying images behind a customizable warning overlay. Users must explicitly choose to view the content by clicking a reveal button.
+
+**Key Features:**
+
+* **Content Warning System**: Images are hidden behind an overlay by default
+* **Customizable Overlay**: Full control over background color, blur intensity, and text content
+* **Smooth Transitions**: Professional fade animations when revealing/hiding content
+* **Button Customization**: Customize both reveal and hide button text and styling
+* **Responsive Design**: Works seamlessly across all device sizes
+* **Theme Integration**: Adapts to your existing WordPress theme styling
+* **User Consent**: Respects user choice with clear reveal/hide functionality
+* **Accessibility**: Proper ARIA labels and keyboard navigation support
+
+**Customization Options:**
+
+* Overlay background color picker
+* Blur intensity slider (0-20px)
+* Custom warning text field
+* Reveal button text customization
+* Hide button text customization
+* Button styling options
+* Overlay opacity control
+
+**Use Cases:**
+
+* Medical or educational content
+* Artistic content that may be sensitive
+* Before/after transformations
+* Potentially disturbing imagery
+* Age-restricted content
+* Spoiler protection for media content
+
+== Installation ==
+
+1. Upload the plugin files to the `/wp-content/plugins/sensitive-image` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress
+3. Add the "Sensitive Image" block to any post or page
+4. Upload your image and customize the overlay settings
+5. Preview your content to ensure the warning system works as expected
+
+== Frequently Asked Questions ==
+
+= How do I customize the warning message? =
+
+In the block settings panel, you'll find a "Warning Text" field where you can enter your custom message. The default text is "This image may contain sensitive content."
+
+= Can I change the overlay background color? =
+
+Yes! Use the background color picker in the block settings to choose any color that fits your site's design.
+
+= How do I adjust the blur intensity? =
+
+The blur intensity slider in the settings allows you to control how much the image is blurred behind the overlay, from 0 (no blur) to 20 pixels.
+
+= Will this work with my theme? =
+
+The block is designed to integrate seamlessly with any WordPress theme while maintaining its core functionality.
+
+= Is the block accessible? =
+
+Yes, the block includes proper ARIA labels and supports keyboard navigation for accessibility compliance.
+
+= Can users re-hide the image after viewing it? =
+
+Yes, after revealing the image, a "Hide Image" button appears allowing users to re-apply the content warning overlay.
+
+== Screenshots ==
+
+1. Block editor interface showing image upload and overlay settings
+2. Frontend overlay display with customizable warning message and reveal button
+3. Smooth transition revealing the sensitive image content
+4. Block settings panel with all customization options
+5. Responsive design working across different device sizes
+
+== Changelog ==
+
+= 0.1.0 =
+* Initial release
+* Content warning overlay functionality
+* Customizable overlay settings
+* Smooth reveal/hide transitions
+* Full responsive design support
+* Theme integration
+* Accessibility features
+
+== Privacy ==
+
+This block does not collect, store, or transmit any user data. All functionality is contained within your WordPress installation.
+
+== Support ==
+
+For support and feature requests, please visit the plugin's support forum or contact WordPress Telex.
+]]></content>
+  </file>
+  <file path="sensitive-image.php">
+    <description>This file contains the block registration code in the form of a single block plugin. Any other plugin related functionality should be added to this file. All block rendering functionality should go to the `render.php` file.</description>
+    <content><![CDATA[<?php
+/**
+ * Plugin Name:       Sensitive Image
+ * Description:       A WordPress block for displaying potentially sensitive images behind a customizable content warning overlay.
+ * Version:           0.1.0
+ * Requires at least: 6.1
+ * Requires PHP:      7.4
+ * Author:            WordPress Telex
+ * License:           GPLv2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       sensitive-image-block-wp
+ *
+ * @package SensitiveImage
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+/**
+ * Registers the block using the metadata loaded from the `block.json` file.
+ * Behind the scenes, it registers also all assets so they can be enqueued
+ * through the block editor in the corresponding context.
+ *
+ * @see https://developer.wordpress.org/reference/functions/register_block_type/
+ */
+function sensitive_image_block_init() {
+	register_block_type( __DIR__ . '/build/' );
+}
+add_action( 'init', 'sensitive_image_block_init' );
+]]></content>
+  </file>
+  <file path="src/block.json">
+    <description>This file contains metadata about the block including its name, title, category, icon, and other properties. The icon is a WordPress Dashicon name (e.g., "admin-post", "format-aside", "admin-page"). Do not use any icon that's not in the list under any circustamce. These are the only slugs available:
+	
+	menu menu-alt menu-alt2 menu-alt3 admin-site admin-site-alt admin-site-alt2 admin-site-alt3 dashboard admin-post admin-media admin-links admin-page admin-comments admin-appearance admin-plugins plugins-checked admin-users admin-tools admin-settings admin-network admin-home admin-generic admin-collapse filter admin-customizer admin-multisite welcome-write-blog welcome-add-page welcome-view-site welcome-widgets-menus welcome-comments welcome-learn-more format-aside format-image format-gallery format-video format-status format-quote format-chat format-audio camera camera-alt images-alt images-alt2 video-alt video-alt2 video-alt3 media-archive media-audio media-code media-default media-document media-interactive media-spreadsheet media-text media-video playlist-audio playlist-video controls-play controls-pause controls-forward controls-skipforward controls-back controls-skipback controls-repeat controls-volumeon controls-volumeoff image-crop image-rotate image-rotate-left image-rotate-right image-flip-vertical image-flip-horizontal image-filter undo redo database-add database database-export database-import database-remove database-view align-full-width align-pull-left align-pull-right align-wide block-default button cloud-saved cloud-upload columns cover-image ellipsis embed-audio embed-generic embed-photo embed-post embed-video exit heading html info-outline insert insert-after insert-before remove saved shortcode table-col-after table-col-before table-col-delete table-row-after table-row-before table-row-delete editor-bold editor-italic editor-ul editor-ol editor-ol-rtl editor-quote editor-alignleft editor-aligncenter editor-alignright editor-insertmore editor-spellcheck editor-expand editor-contract editor-kitchensink editor-underline editor-justify editor-textcolor editor-paste-word editor-paste-text editor-removeformatting editor-video editor-customchar editor-outdent editor-indent editor-help editor-strikethrough editor-unlink editor-rtl editor-ltr editor-break editor-code editor-paragraph editor-table align-left align-right align-center align-none lock unlock calendar calendar-alt visibility hidden post-status edit trash sticky external arrow-up arrow-down arrow-right arrow-left arrow-up-alt arrow-down-alt arrow-right-alt arrow-left-alt arrow-up-alt2 arrow-down-alt2 arrow-right-alt2 arrow-left-alt2 sort leftright randomize list-view excerpt-view grid-view move share share-alt share-alt2 rss email email-alt email-alt2 networking amazon facebook facebook-alt google instagram linkedin pinterest podio reddit spotify twitch twitter twitter-alt whatsapp xing youtube hammer art migrate performance universal-access universal-access-alt tickets nametag clipboard heart megaphone schedule tide rest-api code-standards buddicons-activity buddicons-bbpress-logo buddicons-buddypress-logo buddicons-community buddicons-forums buddicons-friends buddicons-groups buddicons-pm buddicons-replies buddicons-topics buddicons-tracking wordpress wordpress-alt pressthis update update-alt screenoptions info cart feedback cloud translation tag category archive tagcloud text bell yes yes-alt no no-alt plus plus-alt plus-alt2 minus dismiss marker star-filled star-half star-empty flag warning location location-alt vault shield shield-alt sos search slides text-page analytics chart-pie chart-bar chart-line chart-area groups businessman businesswoman businessperson id id-alt products awards forms testimonial portfolio book book-alt download upload backup clock lightbulb microphone desktop laptop tablet smartphone phone index-card carrot building store album palmtree tickets-alt money money-alt smiley thumbs-up thumbs-down layout paperclip color-picker edit-large edit-page airplane bank beer calculator car coffee drumstick food fullscreen-alt fullscreen-exit-alt games hourglass open-folder pdf pets printer privacy superhero superhero-alt</description>
+    <content><![CDATA[{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "telex/block-sensitive-image",
+	"version": "0.1.0",
+	"title": "Sensitive Image",
+	"category": "media",
+	"icon": "warning",
+	"description": "Display potentially sensitive images behind a customizable content warning overlay.",
+	"example": {
+		"attributes": {
+			"warningText": "This image may contain sensitive content",
+			"revealButtonText": "Show Image",
+			"hideButtonText": "Hide Image"
+		}
+	},
+	"attributes": {
+		"imageId": {
+			"type": "number"
+		},
+		"imageUrl": {
+			"type": "string"
+		},
+		"imageAlt": {
+			"type": "string",
+			"default": ""
+		},
+		"caption": {
+			"type": "string"
+		},
+		"href": {
+			"type": "string"
+		},
+		"linkTarget": {
+			"type": "string"
+		},
+		"rel": {
+			"type": "string"
+		},
+		"linkClass": {
+			"type": "string"
+		},
+		"warningText": {
+			"type": "string",
+			"default": "This image may contain sensitive content"
+		},
+		"revealButtonText": {
+			"type": "string",
+			"default": "Show Image"
+		},
+		"hideButtonText": {
+			"type": "string",
+			"default": "Hide Image"
+		},
+		"overlayBackgroundColor": {
+			"type": "string",
+			"default": "#000000"
+		},
+		"overlayOpacity": {
+			"type": "number",
+			"default": 0.8
+		},
+		"blurIntensity": {
+			"type": "number",
+			"default": 10
+		},
+		"buttonBackgroundColor": {
+			"type": "string",
+			"default": "#ffffff"
+		},
+		"buttonTextColor": {
+			"type": "string",
+			"default": "#000000"
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": ["left", "center", "right", "wide", "full"],
+		"anchor": true,
+		"color": {
+			"__experimentalDuotone": "img, .sensitive-image"
+		}
+	},
+	"textdomain": "sensitive-image-block-wp",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js",
+	"render": "file:./render.php"
+}]]></content>
+  </file>
+  <file path="src/index.js">
+    <description>This file registers the block, specifies the edit and save functions, and loads the block's metadata</description>
+    <content><![CDATA[
+/**
+ * Registers a new block provided a unique name and an object defining its behavior.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
+ */
+import { registerBlockType } from '@wordpress/blocks';
+
+/**
+ * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
+ * All files containing `style` keyword are bundled together. The code used
+ * gets applied both to the front of your site and to the editor.
+ *
+ * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
+ */
+import './style.scss';
+
+/**
+ * Internal dependencies
+ */
+import Edit from './edit';
+import metadata from './block.json';
+
+/**
+ * Every block starts by registering a new block type definition.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-registration/
+ */
+registerBlockType( metadata.name, {
+	/**
+	 * @see ./edit.js
+	 */
+	edit: Edit,
+} );
+]]></content>
+  </file>
+  <file path="src/edit.js">
+    <description>This file contains the edit function for the block which is responsible for rendering the block in the editor.</description>
+    <content><![CDATA[/**
+ * Retrieves the translation of text.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-i18n/
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
+ * React hook that is used to mark the block wrapper element.
+ * It provides all the necessary props like the class name.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useblockprops
+ */
+import { 
+	useBlockProps, 
+	InspectorControls,
+	MediaPlaceholder,
+	RichText,
+	BlockControls,
+	MediaReplaceFlow,
+	__experimentalLinkControl as LinkControl
+} from '@wordpress/block-editor';
+
+import {
+	PanelBody,
+	TextControl,
+	RangeControl,
+	Button,
+	ColorPicker,
+	ToolbarButton,
+	Popover
+} from '@wordpress/components';
+
+import { 
+	useSelect
+} from '@wordpress/data';
+
+import { 
+	useState
+} from '@wordpress/element';
+
+import { 
+	crop,
+	link,
+	linkOff
+} from '@wordpress/icons';
+
+/**
+ * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
+ * Those files can contain any CSS code that gets applied to the editor.
+ *
+ * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
+ */
+import './editor.scss';
+
+/**
+ * The edit function describes the structure of your block in the context of the
+ * editor. This represents what the editor will render when the block is used.
+ *
+ * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/#edit
+ *
+ * @return {Element} Element to render.
+ */
+export default function Edit({ attributes, setAttributes, isSelected, clientId }) {
+	const {
+		imageId,
+		imageUrl,
+		imageAlt,
+		caption,
+		href,
+		linkTarget,
+		rel,
+		linkClass,
+		warningText,
+		revealButtonText,
+		hideButtonText,
+		overlayBackgroundColor,
+		overlayOpacity,
+		blurIntensity,
+		buttonBackgroundColor,
+		buttonTextColor
+	} = attributes;
+
+	const [showOverlayPreview, setShowOverlayPreview] = useState(true);
+	const [isLinkUIOpen, setIsLinkUIOpen] = useState(false);
+
+	// Handle image selection
+	const onSelectImage = (media) => {
+		if (!media || !media.url) {
+			setAttributes({
+				imageUrl: undefined,
+				imageAlt: undefined,
+				imageId: undefined,
+				caption: undefined,
+			});
+			return;
+		}
+
+		setAttributes({
+			imageUrl: media.url,
+			imageId: media.id,
+			imageAlt: media.alt || media.title || '',
+			caption: media.caption || caption
+		});
+	};
+
+	// Handle upload error
+	const onUploadError = (message) => {
+		console.error('Upload error:', message);
+	};
+
+	// Link controls
+	const onSetHref = (props) => {
+		setAttributes(props);
+	};
+
+	const onUnlink = () => {
+		setAttributes({
+			href: undefined,
+			linkTarget: undefined,
+			rel: undefined,
+			linkClass: undefined,
+		});
+	};
+
+	const linkValue = {
+		url: href,
+		target: linkTarget,
+		linkClass,
+		rel,
+	};
+
+	const blockProps = useBlockProps({
+		className: 'wp-block-telex-sensitive-image'
+	});
+
+	if (!imageUrl) {
+		return (
+			<>
+				<InspectorControls>
+					<PanelBody title={__('Content Warning Settings', 'sensitive-image-block-wp')}>
+						<TextControl
+							label={__('Warning Text', 'sensitive-image-block-wp')}
+							value={warningText}
+							onChange={(value) => setAttributes({ warningText: value })}
+							help={__('Text displayed on the overlay warning users about sensitive content', 'sensitive-image-block-wp')}
+						/>
+						<TextControl
+							label={__('Reveal Button Text', 'sensitive-image-block-wp')}
+							value={revealButtonText}
+							onChange={(value) => setAttributes({ revealButtonText: value })}
+						/>
+						<TextControl
+							label={__('Hide Button Text', 'sensitive-image-block-wp')}
+							value={hideButtonText}
+							onChange={(value) => setAttributes({ hideButtonText: value })}
+						/>
+					</PanelBody>
+
+					<PanelBody title={__('Overlay Appearance', 'sensitive-image-block-wp')}>
+						<p>{__('Background Color', 'sensitive-image-block-wp')}</p>
+						<ColorPicker
+							color={overlayBackgroundColor}
+							onChangeComplete={(value) => setAttributes({ overlayBackgroundColor: value.hex })}
+						/>
+						
+						<RangeControl
+							label={__('Overlay Opacity', 'sensitive-image-block-wp')}
+							value={overlayOpacity}
+							onChange={(value) => setAttributes({ overlayOpacity: value })}
+							min={0.1}
+							max={1}
+							step={0.1}
+						/>
+
+						<RangeControl
+							label={__('Background Blur Intensity', 'sensitive-image-block-wp')}
+							value={blurIntensity}
+							onChange={(value) => setAttributes({ blurIntensity: value })}
+							min={0}
+							max={20}
+							help={__('Amount of blur applied to the image behind the overlay', 'sensitive-image-block-wp')}
+						/>
+					</PanelBody>
+
+					<PanelBody title={__('Button Styling', 'sensitive-image-block-wp')}>
+						<p>{__('Button Background Color', 'sensitive-image-block-wp')}</p>
+						<ColorPicker
+							color={buttonBackgroundColor}
+							onChangeComplete={(value) => setAttributes({ buttonBackgroundColor: value.hex })}
+						/>
+						
+						<p>{__('Button Text Color', 'sensitive-image-block-wp')}</p>
+						<ColorPicker
+							color={buttonTextColor}
+							onChangeComplete={(value) => setAttributes({ buttonTextColor: value.hex })}
+						/>
+					</PanelBody>
+				</InspectorControls>
+
+				<div {...blockProps}>
+					<MediaPlaceholder
+						icon="warning"
+						labels={{
+							title: __('Sensitive Image', 'sensitive-image-block-wp'),
+							instructions: __('Upload an image that requires a content warning', 'sensitive-image-block-wp'),
+						}}
+						className="sensitive-image-placeholder"
+						allowedTypes={['image']}
+						value={{ id: imageId, src: imageUrl }}
+						onSelect={onSelectImage}
+						onError={onUploadError}
+						disableMediaButtons={imageUrl}
+					/>
+				</div>
+			</>
+		);
+	}
+
+	return (
+		<>
+			<BlockControls group="block">
+				<MediaReplaceFlow
+					mediaId={imageId}
+					mediaURL={imageUrl}
+					allowedTypes={['image']}
+					accept="image/*"
+					onSelect={onSelectImage}
+					onError={onUploadError}
+					name={!imageUrl ? __('Add image', 'sensitive-image-block-wp') : __('Replace image', 'sensitive-image-block-wp')}
+				/>
+				<ToolbarButton
+					icon={href ? linkOff : link}
+					label={href ? __('Unlink', 'sensitive-image-block-wp') : __('Link', 'sensitive-image-block-wp')}
+					onClick={() => {
+						if (href) {
+							onUnlink();
+						} else {
+							setIsLinkUIOpen(true);
+						}
+					}}
+				/>
+			</BlockControls>
+
+			<InspectorControls>
+				<PanelBody title={__('Content Warning Settings', 'sensitive-image-block-wp')}>
+					<TextControl
+						label={__('Warning Text', 'sensitive-image-block-wp')}
+						value={warningText}
+						onChange={(value) => setAttributes({ warningText: value })}
+						help={__('Text displayed on the overlay warning users about sensitive content', 'sensitive-image-block-wp')}
+					/>
+					<TextControl
+						label={__('Reveal Button Text', 'sensitive-image-block-wp')}
+						value={revealButtonText}
+						onChange={(value) => setAttributes({ revealButtonText: value })}
+					/>
+					<TextControl
+						label={__('Hide Button Text', 'sensitive-image-block-wp')}
+						value={hideButtonText}
+						onChange={(value) => setAttributes({ hideButtonText: value })}
+					/>
+				</PanelBody>
+
+				<PanelBody title={__('Overlay Appearance', 'sensitive-image-block-wp')}>
+					<p>{__('Background Color', 'sensitive-image-block-wp')}</p>
+					<ColorPicker
+						color={overlayBackgroundColor}
+						onChangeComplete={(value) => setAttributes({ overlayBackgroundColor: value.hex })}
+					/>
+					
+					<RangeControl
+						label={__('Overlay Opacity', 'sensitive-image-block-wp')}
+						value={overlayOpacity}
+						onChange={(value) => setAttributes({ overlayOpacity: value })}
+						min={0.1}
+						max={1}
+						step={0.1}
+					/>
+
+					<RangeControl
+						label={__('Background Blur Intensity', 'sensitive-image-block-wp')}
+						value={blurIntensity}
+						onChange={(value) => setAttributes({ blurIntensity: value })}
+						min={0}
+						max={20}
+						help={__('Amount of blur applied to the image behind the overlay', 'sensitive-image-block-wp')}
+					/>
+				</PanelBody>
+
+				<PanelBody title={__('Button Styling', 'sensitive-image-block-wp')}>
+					<p>{__('Button Background Color', 'sensitive-image-block-wp')}</p>
+					<ColorPicker
+							color={buttonBackgroundColor}
+							onChangeComplete={(value) => setAttributes({ buttonBackgroundColor: value.hex })}
+						/>
+						
+					<p>{__('Button Text Color', 'sensitive-image-block-wp')}</p>
+					<ColorPicker
+							color={buttonTextColor}
+							onChangeComplete={(value) => setAttributes({ buttonTextColor: value.hex })}
+						/>
+				</PanelBody>
+
+				<PanelBody title={__('Preview', 'sensitive-image-block-wp')}>
+					<Button 
+						variant="secondary"
+						onClick={() => setShowOverlayPreview(!showOverlayPreview)}
+					>
+						{showOverlayPreview ? __('Hide Overlay', 'sensitive-image-block-wp') : __('Show Overlay', 'sensitive-image-block-wp')}
+					</Button>
+				</PanelBody>
+			</InspectorControls>
+
+			{isLinkUIOpen && (
+				<Popover
+					position="bottom center"
+					onClose={() => setIsLinkUIOpen(false)}
+					focusOnMount={false}
+				>
+					<LinkControl
+						value={linkValue}
+						onChange={onSetHref}
+						onClose={() => setIsLinkUIOpen(false)}
+					/>
+				</Popover>
+			)}
+
+			<div {...blockProps}>
+				<div className="sensitive-image-container">
+					<div className="sensitive-image-wrapper">
+						{href ? (
+							<a
+								href={href}
+								target={linkTarget}
+								rel={rel}
+								className={linkClass}
+								onClick={(e) => e.preventDefault()} // Prevent navigation in editor
+							>
+								<img 
+									src={imageUrl} 
+									alt={imageAlt}
+									className="sensitive-image"
+									style={{
+										filter: showOverlayPreview ? `blur(${blurIntensity}px)` : 'none'
+									}}
+								/>
+							</a>
+						) : (
+							<img 
+								src={imageUrl} 
+								alt={imageAlt}
+								className="sensitive-image"
+								style={{
+									filter: showOverlayPreview ? `blur(${blurIntensity}px)` : 'none'
+								}}
+							/>
+						)}
+						
+						{showOverlayPreview && (
+							<div 
+								className="sensitive-image-overlay"
+								style={{
+									backgroundColor: overlayBackgroundColor,
+									opacity: overlayOpacity
+								}}
+							>
+								<div className="overlay-content">
+									<div className="warning-text">{warningText}</div>
+									<button 
+										className="reveal-button"
+										style={{
+											backgroundColor: buttonBackgroundColor,
+											color: buttonTextColor
+										}}
+										onClick={() => setShowOverlayPreview(false)}
+									>
+										{revealButtonText}
+									</button>
+								</div>
+							</div>
+						)}
+						
+						{!showOverlayPreview && (
+							<button 
+								className="hide-button visible"
+								style={{
+									backgroundColor: buttonBackgroundColor,
+									color: buttonTextColor
+								}}
+								onClick={() => setShowOverlayPreview(true)}
+							>
+								{hideButtonText}
+							</button>
+						)}
+					</div>
+
+					{(caption || isSelected) && (
+						<RichText
+							tagName="figcaption"
+							className="wp-element-caption"
+							placeholder={__('Add caption...', 'sensitive-image-block-wp')}
+							value={caption}
+							onChange={(value) => setAttributes({ caption: value })}
+							inlineToolbar
+						/>
+					)}
+				</div>
+			</div>
+		</>
+	);
+}]]></content>
+  </file>
+  <file path="src/save.js">
+    <description>This file contains the save function for the block which is responsible for creating the static result of rendering the block on the client to display the saved result on the front end.</description>
+    <content><![CDATA[
+]]></content>
+  </file>
+  <file path="src/style.scss">
+    <description>This file contains styles for the block in the front end.</description>
+    <content><![CDATA[/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ */
+
+.wp-block-telex-sensitive-image {
+	margin: 1em 0;
+	
+	.sensitive-image-container {
+		position: relative;
+		max-width: 100%;
+		display: inline-block;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+	
+	.sensitive-image-wrapper {
+		position: relative;
+		display: inline-block;
+		max-width: 100%;
+		width: auto;
+	}
+	
+	.sensitive-image {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		transition: filter 0.4s ease;
+		vertical-align: bottom;
+	}
+	
+	// Link wrapper styling
+	a {
+		display: inline-block;
+		text-decoration: none;
+		position: relative;
+		max-width: 100%;
+		
+		&:hover .sensitive-image {
+			opacity: 0.9;
+		}
+	}
+	
+	.sensitive-image-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: rgba(0, 0, 0, 0.8);
+		transition: opacity 0.4s ease, visibility 0.4s ease;
+		z-index: 10;
+		cursor: pointer;
+		opacity: 1;
+		visibility: visible;
+		box-sizing: border-box;
+		
+		&.revealed {
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+		}
+	}
+	
+	.overlay-content {
+		text-align: center;
+		color: white;
+		padding: 2rem;
+		max-width: 80%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+	}
+	
+	.warning-text {
+		font-size: 1.1rem;
+		margin-bottom: 1.5rem;
+		line-height: 1.4;
+		font-weight: 500;
+		text-align: center;
+	}
+	
+	.reveal-button {
+		background-color: #ffffff;
+		color: #000000;
+		border: none;
+		padding: 0.75rem 1.5rem;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 1rem;
+		font-weight: 500;
+		transition: all 0.2s ease;
+		display: inline-block;
+		
+		&:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+		
+		&:active {
+			transform: translateY(0);
+		}
+		
+		&:focus {
+			outline: 2px solid #005cee;
+			outline-offset: 2px;
+		}
+	}
+	
+	.hide-button {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		padding: 0.5rem 1rem;
+		font-size: 0.9rem;
+		background-color: rgba(255, 255, 255, 0.9);
+		color: #000000;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: 500;
+		backdrop-filter: blur(10px);
+		opacity: 0;
+		visibility: hidden;
+		transition: all 0.3s ease;
+		z-index: 20;
+		transform: translateY(-10px);
+		
+		&.visible {
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0);
+		}
+		
+		&:hover {
+			background-color: rgba(255, 255, 255, 1);
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+		
+		&:focus {
+			outline: 2px solid #005cee;
+			outline-offset: 2px;
+		}
+	}
+	
+	// Show hide button on hover when image is revealed
+	&:hover .hide-button.visible {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0);
+	}
+	
+	// Caption styling
+	.wp-element-caption {
+		margin-top: 0.5rem;
+		margin-bottom: 0;
+		color: #666;
+		font-size: 0.9rem;
+		line-height: 1.4;
+		text-align: center;
+	}
+
+	// Responsive design
+	@media (max-width: 768px) {
+		.overlay-content {
+			padding: 1.5rem;
+			max-width: 90%;
+		}
+		
+		.warning-text {
+			font-size: 1rem;
+			margin-bottom: 1rem;
+		}
+		
+		.reveal-button {
+			padding: 0.6rem 1.2rem;
+			font-size: 0.95rem;
+		}
+		
+		.hide-button {
+			top: 0.5rem;
+			right: 0.5rem;
+			padding: 0.4rem 0.8rem;
+			font-size: 0.85rem;
+		}
+	}
+	
+	@media (max-width: 480px) {
+		.overlay-content {
+			padding: 1rem;
+		}
+		
+		.warning-text {
+			font-size: 0.9rem;
+		}
+		
+		.reveal-button {
+			padding: 0.5rem 1rem;
+			font-size: 0.9rem;
+		}
+	}
+}]]></content>
+  </file>
+  <file path="src/editor.scss">
+    <description>This file contains styles for the block in the editor.</description>
+    <content><![CDATA[/**
+ * The following styles get applied inside the editor only.
+ */
+
+.wp-block-telex-sensitive-image {
+	// Prevent the block from expanding beyond image boundaries
+	max-width: 100%;
+	display: inline-block;
+	width: fit-content;
+	
+	.sensitive-image-placeholder {
+		border: 2px dashed #ddd;
+		border-radius: 8px;
+		padding: 3rem 2rem;
+		text-align: center;
+		background-color: #f9f9f9;
+		transition: border-color 0.2s ease;
+		
+		&:hover {
+			border-color: #005cee;
+		}
+		
+		.components-button {
+			margin-bottom: 1rem;
+		}
+		
+		p {
+			margin: 0;
+			color: #666;
+			font-size: 0.95rem;
+		}
+	}
+	
+	.sensitive-image-container {
+		// Constrain container to image size in editor
+		display: inline-block;
+		max-width: 100%;
+		width: auto;
+		position: relative;
+		overflow: hidden;
+		border-radius: 8px;
+	}
+	
+	.sensitive-image-wrapper {
+		// Ensure wrapper doesn't expand beyond image
+		display: inline-block;
+		position: relative;
+		max-width: 100%;
+		width: auto;
+	}
+	
+	.sensitive-image {
+		// Prevent image from causing container expansion
+		display: block;
+		max-width: 100%;
+		height: auto;
+		vertical-align: bottom;
+	}
+	
+	// Editor-specific overlay styling
+	.sensitive-image-overlay {
+		border-radius: 8px;
+		// Ensure overlay stays within image bounds
+		box-sizing: border-box;
+		
+		.reveal-button {
+			pointer-events: all;
+		}
+	}
+	
+	// Preview mode indicator
+	.sensitive-image-wrapper::after {
+		content: attr(data-preview-mode);
+		position: absolute;
+		top: 0.5rem;
+		left: 0.5rem;
+		background: rgba(0, 0, 0, 0.7);
+		color: white;
+		padding: 0.25rem 0.5rem;
+		border-radius: 3px;
+		font-size: 0.75rem;
+		pointer-events: none;
+		z-index: 100;
+	}
+	
+	// Caption editor styling
+	.wp-element-caption {
+		margin-top: 0.5rem;
+		max-width: 100%;
+		
+		&[data-is-placeholder-visible="true"] {
+			opacity: 0.6;
+		}
+	}
+	
+	// Link preview in editor
+	a {
+		cursor: default; // Prevent link cursor in editor
+		display: inline-block;
+		max-width: 100%;
+		
+		&::after {
+			content: "🔗";
+			position: absolute;
+			top: 0.5rem;
+			right: 0.5rem;
+			background: rgba(0, 0, 0, 0.7);
+			color: white;
+			padding: 0.25rem 0.5rem;
+			border-radius: 3px;
+			font-size: 0.75rem;
+			pointer-events: none;
+			z-index: 101;
+		}
+	}
+}
+
+// Override Gutenberg block wrapper styles in editor
+.block-editor-block-list__block.wp-block-telex-block-sensitive-image {
+	// Prevent block wrapper from expanding beyond content
+	max-width: 100%;
+	width: auto;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.block-editor-block-list__block.wp-block-telex-sensitive-image {
+	// Alternative selector for the block
+	max-width: 100%;
+	width: auto;
+	display: inline-block;
+	vertical-align: top;
+}
+
+// Inspector controls styling
+.block-editor-block-inspector {
+	.components-color-picker {
+		margin-bottom: 1rem;
+	}
+	
+	.components-base-control__help {
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+}
+
+// Block toolbar styling
+.block-editor-block-toolbar {
+	.components-toolbar-button {
+		&[aria-pressed="true"] {
+			background-color: #005cee;
+			color: white;
+		}
+	}
+}
+
+// Media replace flow styling
+.block-editor-media-replace-flow {
+	.components-popover__content {
+		min-width: 300px;
+	}
+}]]></content>
+  </file>
+  <file path="src/view.js">
+    <description>This file contains the view function for the block which is responsible for rendering interactive behaviors of the block on the front end. Ideally using the WordPress interactivity API.</description>
+    <content><![CDATA[/**
+ * Frontend JavaScript for the Sensitive Image block
+ * Handles overlay reveal/hide functionality with smooth transitions
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+	const sensitiveImages = document.querySelectorAll('.wp-block-telex-sensitive-image');
+	
+	sensitiveImages.forEach(function(block) {
+		const container = block.querySelector('.sensitive-image-container');
+		const wrapper = block.querySelector('.sensitive-image-wrapper');
+		const overlay = block.querySelector('.sensitive-image-overlay');
+		const revealButton = block.querySelector('.reveal-button');
+		const hideButton = block.querySelector('.hide-button');
+		const image = block.querySelector('.sensitive-image');
+		
+		if (!container || !wrapper || !overlay || !revealButton || !hideButton || !image) {
+			console.warn('Sensitive Image block: Missing required elements');
+			return;
+		}
+		
+		// Get blur intensity from data attribute or default to 10
+		const blurIntensity = parseInt(block.dataset.blurIntensity) || 10;
+		
+		// Track reveal state
+		let isRevealed = false;
+		
+		function initializeState() {
+			// Apply initial blur to image
+			image.style.filter = `blur(${blurIntensity}px)`;
+			
+			// Ensure overlay is visible and positioned correctly
+			overlay.classList.remove('revealed');
+			overlay.style.opacity = '1';
+			overlay.style.visibility = 'visible';
+			overlay.style.pointerEvents = 'auto';
+			
+			// Hide the hide button initially
+			hideButton.classList.remove('visible');
+			hideButton.style.opacity = '0';
+			hideButton.style.visibility = 'hidden';
+			
+			isRevealed = false;
+			console.log('Sensitive image initialized with blur:', blurIntensity + 'px');
+		}
+		
+		function revealImage() {
+			if (isRevealed) return;
+			
+			console.log('Revealing image');
+			
+			// Remove blur from image
+			image.style.filter = 'blur(0px)';
+			
+			// Hide overlay with transition
+			overlay.classList.add('revealed');
+			overlay.style.opacity = '0';
+			overlay.style.visibility = 'hidden';
+			overlay.style.pointerEvents = 'none';
+			
+			// Show hide button after a short delay
+			setTimeout(() => {
+				hideButton.classList.add('visible');
+				hideButton.style.opacity = '1';
+				hideButton.style.visibility = 'visible';
+			}, 200);
+			
+			isRevealed = true;
+		}
+		
+		function hideImage() {
+			if (!isRevealed) return;
+			
+			console.log('Hiding image');
+			
+			// Hide the hide button immediately
+			hideButton.classList.remove('visible');
+			hideButton.style.opacity = '0';
+			hideButton.style.visibility = 'hidden';
+			
+			// Apply blur to image
+			image.style.filter = `blur(${blurIntensity}px)`;
+			
+			// Show overlay
+			overlay.classList.remove('revealed');
+			overlay.style.opacity = '1';
+			overlay.style.visibility = 'visible';
+			overlay.style.pointerEvents = 'auto';
+			
+			isRevealed = false;
+		}
+		
+		// Initialize the block state - overlay visible by default
+		initializeState();
+		
+		// Event listeners
+		revealButton.addEventListener('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			revealImage();
+		});
+		
+		hideButton.addEventListener('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			hideImage();
+		});
+		
+		// Allow clicking anywhere on overlay to reveal
+		overlay.addEventListener('click', function(e) {
+			// Only trigger if not clicking on the button directly
+			if (!revealButton.contains(e.target)) {
+				revealImage();
+			}
+		});
+		
+		// Keyboard accessibility
+		revealButton.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				revealImage();
+			}
+		});
+		
+		hideButton.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				hideImage();
+			}
+		});
+	});
+});]]></content>
+  </file>
+  <file path="src/render.php">
+    <description>This file contains the render callback function for the block, which is responsible for rendering the block content on the front end. A render function should exist only if the block is dynamic.</description>
+    <content><![CDATA[<?php
+/**
+ * @see https://github.com/WordPress/gutenberg/blob/trunk/docs/reference-guides/block-api/block-metadata.md#render
+ */
+
+// Extract attributes
+$image_id = $attributes['imageId'] ?? null;
+$image_url = $attributes['imageUrl'] ?? '';
+$image_alt = $attributes['imageAlt'] ?? '';
+$caption = $attributes['caption'] ?? '';
+$href = $attributes['href'] ?? '';
+$link_target = $attributes['linkTarget'] ?? '';
+$rel = $attributes['rel'] ?? '';
+$link_class = $attributes['linkClass'] ?? '';
+$warning_text = $attributes['warningText'] ?? __('This image may contain sensitive content', 'sensitive-image-block-wp');
+$reveal_button_text = $attributes['revealButtonText'] ?? __('Show Image', 'sensitive-image-block-wp');
+$hide_button_text = $attributes['hideButtonText'] ?? __('Hide Image', 'sensitive-image-block-wp');
+$overlay_bg_color = $attributes['overlayBackgroundColor'] ?? '#000000';
+$overlay_opacity = $attributes['overlayOpacity'] ?? 0.8;
+$blur_intensity = $attributes['blurIntensity'] ?? 10;
+$button_bg_color = $attributes['buttonBackgroundColor'] ?? '#ffffff';
+$button_text_color = $attributes['buttonTextColor'] ?? '#000000';
+
+// If no image, don't render
+if (!$image_url) {
+    return '';
+}
+
+// Convert hex to rgba for overlay background
+if (!function_exists('sensitive_image_hex_to_rgba')) {
+    function sensitive_image_hex_to_rgba($hex, $alpha = 1) {
+        $hex = str_replace('#', '', $hex);
+        if (strlen($hex) == 3) {
+            $hex = str_repeat(substr($hex, 0, 1), 2) . str_repeat(substr($hex, 1, 1), 2) . str_repeat(substr($hex, 2, 1), 2);
+        }
+        $rgb = array_map('hexdec', str_split($hex, 2));
+        return 'rgba(' . implode(', ', $rgb) . ', ' . $alpha . ')';
+    }
+}
+
+$overlay_bg_rgba = sensitive_image_hex_to_rgba($overlay_bg_color, $overlay_opacity);
+
+// Get block wrapper attributes with blur intensity data
+$wrapper_attributes = get_block_wrapper_attributes([
+    'data-blur-intensity' => $blur_intensity,
+    'class' => 'wp-block-telex-sensitive-image'
+]);
+
+// Build link attributes if href exists
+$link_attributes = '';
+if ($href) {
+    $link_attributes = sprintf(
+        'href="%s"%s%s%s',
+        esc_url($href),
+        $link_target ? ' target="' . esc_attr($link_target) . '"' : '',
+        $rel ? ' rel="' . esc_attr($rel) . '"' : '',
+        $link_class ? ' class="' . esc_attr($link_class) . '"' : ''
+    );
+}
+
+// Unique ID for accessibility
+$unique_id = 'sensitive-image-' . wp_rand(1000, 9999);
+
+?>
+<div <?php echo $wrapper_attributes; ?>>
+    <div class="sensitive-image-container">
+        <div class="sensitive-image-wrapper">
+            <?php if ($href) : ?>
+                <a <?php echo $link_attributes; ?>>
+                    <img 
+                        src="<?php echo esc_url($image_url); ?>" 
+                        alt="<?php echo esc_attr($image_alt); ?>"
+                        class="sensitive-image"
+                        loading="lazy"
+                        style="filter: blur(<?php echo intval($blur_intensity); ?>px);"
+                    />
+                </a>
+            <?php else : ?>
+                <img 
+                    src="<?php echo esc_url($image_url); ?>" 
+                    alt="<?php echo esc_attr($image_alt); ?>"
+                    class="sensitive-image"
+                    loading="lazy"
+                    style="filter: blur(<?php echo intval($blur_intensity); ?>px);"
+                />
+            <?php endif; ?>
+            
+            <div 
+                class="sensitive-image-overlay"
+                style="background-color: <?php echo esc_attr($overlay_bg_rgba); ?>;"
+                role="dialog"
+                aria-labelledby="warning-text-<?php echo esc_attr($unique_id); ?>"
+                aria-describedby="warning-desc-<?php echo esc_attr($unique_id); ?>"
+            >
+                <div class="overlay-content">
+                    <div 
+                        id="warning-text-<?php echo esc_attr($unique_id); ?>" 
+                        class="warning-text"
+                    >
+                        <?php echo esc_html($warning_text); ?>
+                    </div>
+                    <button 
+                        class="reveal-button"
+                        style="background-color: <?php echo esc_attr($button_bg_color); ?>; color: <?php echo esc_attr($button_text_color); ?>;"
+                        aria-describedby="warning-desc-<?php echo esc_attr($unique_id); ?>"
+                        type="button"
+                    >
+                        <?php echo esc_html($reveal_button_text); ?>
+                    </button>
+                    <div 
+                        id="warning-desc-<?php echo esc_attr($unique_id); ?>" 
+                        class="screen-reader-text"
+                    >
+                        <?php esc_html_e('Click to reveal the sensitive image content', 'sensitive-image-block-wp'); ?>
+                    </div>
+                </div>
+            </div>
+            
+            <button 
+                class="hide-button"
+                style="background-color: <?php echo esc_attr($button_bg_color); ?>; color: <?php echo esc_attr($button_text_color); ?>;"
+                aria-label="<?php esc_attr_e('Hide sensitive image', 'sensitive-image-block-wp'); ?>"
+                type="button"
+            >
+                <?php echo esc_html($hide_button_text); ?>
+            </button>
+        </div>
+        
+        <?php if ($caption) : ?>
+            <figcaption class="wp-element-caption">
+                <?php echo wp_kses_post($caption); ?>
+            </figcaption>
+        <?php endif; ?>
+    </div>
+</div>]]></content>
+  </file>
+  <file path="package.json">
+    <description>The AI assistant should only edit 'user_provided_block_name_slug', 'description' and resolve 'isDynamicVariant' in this file and ALWAYS INCLUDE IT. This file includes the necessary scripts for building, formatting, and linting the block code. Dependencies are managed at the workspace level via pnpm.</description>
+    <content><![CDATA[
+{
+	"name": "sensitive-image",
+	"version": "0.1.0",
+	"description": "A WordPress block for displaying potentially sensitive images behind a customizable content warning overlay.",
+	"author": "WordPress Telex",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "wp-scripts start"
+	}
+}
+]]></content>
+  </file>
+</artefact>

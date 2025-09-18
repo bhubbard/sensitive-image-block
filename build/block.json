@@ -1,0 +1,96 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "telex/block-sensitive-image",
+  "version": "0.1.0",
+  "title": "Sensitive Image",
+  "category": "media",
+  "icon": "warning",
+  "description": "Display potentially sensitive images behind a customizable content warning overlay.",
+  "example": {
+    "attributes": {
+      "warningText": "This image may contain sensitive content",
+      "revealButtonText": "Show Image",
+      "hideButtonText": "Hide Image"
+    }
+  },
+  "attributes": {
+    "imageId": {
+      "type": "number"
+    },
+    "imageUrl": {
+      "type": "string"
+    },
+    "imageAlt": {
+      "type": "string",
+      "default": ""
+    },
+    "caption": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    },
+    "linkTarget": {
+      "type": "string"
+    },
+    "rel": {
+      "type": "string"
+    },
+    "linkClass": {
+      "type": "string"
+    },
+    "warningText": {
+      "type": "string",
+      "default": "This image may contain sensitive content"
+    },
+    "revealButtonText": {
+      "type": "string",
+      "default": "Show Image"
+    },
+    "hideButtonText": {
+      "type": "string",
+      "default": "Hide Image"
+    },
+    "overlayBackgroundColor": {
+      "type": "string",
+      "default": "#000000"
+    },
+    "overlayOpacity": {
+      "type": "number",
+      "default": 0.8
+    },
+    "blurIntensity": {
+      "type": "number",
+      "default": 10
+    },
+    "buttonBackgroundColor": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "buttonTextColor": {
+      "type": "string",
+      "default": "#000000"
+    }
+  },
+  "supports": {
+    "html": false,
+    "align": [
+      "left",
+      "center",
+      "right",
+      "wide",
+      "full"
+    ],
+    "anchor": true,
+    "color": {
+      "__experimentalDuotone": "img, .sensitive-image"
+    }
+  },
+  "textdomain": "sensitive-image-block-wp",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "style": "file:./style-index.css",
+  "viewScript": "file:./view.js",
+  "render": "file:./render.php"
+}
